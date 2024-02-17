@@ -107,7 +107,7 @@
             // Clear existing options first
             dropdown.innerHTML = '';
             // Add a default "Select" option
-            dropdown.add(new Option("Select a Job Title or SOC Code", ""));
+            dropdown.add(new Option("Select a Job Title", ""));
             // Populate dropdown with fetched data
             data.forEach(item => {
                 let optionText = item["Natural Word Order + Sub Unit Group Description"] + " - " + item["SOC 2020"]; // Customize this as needed
