@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Lookup</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet"> <!-- Ensure you have this for Raleway font -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Raleway', sans-serif;
@@ -22,9 +22,6 @@
         }
         .autocomplete-suggestion:hover {
             background-color: #f0f0f0;
-        }
-        .vc_custom_1707894194125 {
-            margin-top: 80px !important;
         }
         #header {
             width: 100%;
@@ -82,48 +79,63 @@
     <div class="result" id="result"></div>
 
     <script>
-        fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
-    .then(response => response.json())
-    .then(data => {
-    // Use your data here
-    console.log(data);
-    })
-    .catch(error => console.error('Error loading the data:', error));
+        let fetchedData = []; // Initialize an empty array to hold the fetched data
 
-        const soc2020Data = [
-            {
-                "UNIQUE ID": "e2uh",
-                "RECNO ": 27297.0,
-                "D": null, // NaN replaced with null
-                "SOC 90": 523,
-                "SOC 2020": 5242,
-                "INDEXOCC": "Technician, 1",
-                "INDEXOCC NATURAL WORD ORDER": "1 technician",
-                "Natural Word Order + Sub Unit Group Description": "1 technician / Telecoms and related network installers and repairers",
-                "Natural Word Order + Unit Description": "1 technician / Telecoms and related network installers and repairers",
-                "SOC 2020 Ext Code": "5242/00",
-                "SOC2020 4 digit": "5242",
-                "ADD": null,
-                "IND": "telecoms",
-                "SEE": null,
-                "ISCO-08 code based on SOC2020": 3522.0,
-                "VERSNO": null,
-                "SOC 2020 UNIT GROUP DESCRIPTIONS": "Telecoms and related network installers and repairers",
-                "SUB-UNIT GROUP DESCRIPTIONS": "Telecoms and related network installers and repairers",
-                "SDS Green Job?": "No",
-                "SDS Green Job Category": "Not a green job",
-                "O*NET Green Job": "No",
-                "O*NET Green Job Category": "Not a green job"
-            }
-            // Additional entries can be added here
-        ];
+        fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
+        .then(response => response.json())
+        .then(data => {
+            // Store the fetched data for use in other functions
+            fetchedData = data;
+            console.log(fetchedData); // Optional: Log the data to ensure it's loaded
+        })
+        .catch(error => console.error('Error loading the data:', error));
 
         function showSuggestions(input) {
-            // Function code remains the same
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = ''; // Clear previous suggestions
+
+            if (!input) return; // Don't show suggestions if input is empty
+
+            // Filter fetchedData for matching input (case-insensitive)
+            const filteredData = fetchedData.filter(item =>
+                item["Natural Word Order + Sub Unit Group Description"].toLowerCase().includes(input.toLowerCase())
+            );
+
+            // Limit the number of suggestions to display
+            const maxSuggestions = 5;
+            filteredData.slice(0, maxSuggestions).forEach(item => {
+                const div = document.createElement('div');
+                div.textContent = item["Natural Word Order + Sub Unit Group Description"];
+                div.className = 'autocomplete-suggestion';
+                div.onclick = function() {
+                    document.getElementById('jobInput').value = this.textContent;
+                    suggestionsDiv.innerHTML = ''; // Clear suggestions after selection
+                    lookupJob(); // Optionally, automatically perform the lookup when a suggestion is clicked
+                };
+                suggestionsDiv.appendChild(div);
+            });
         }
 
         function lookupJob() {
-            // Function code remains the same
+            const input = document.getElementById('jobInput').value.toLowerCase();
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = ''; // Clear previous results
+
+            // Use fetchedData for lookup
+            const itemDetails = fetchedData.find(item =>
+                item["Natural Word Order + Sub Unit Group Description"].toLowerCase().includes(input)
+            );
+
+            if (itemDetails) {
+                resultDiv.innerHTML = `
+                    <p>Job Title: ${itemDetails["INDEXOCC NATURAL WORD ORDER"]}</p>
+                    <p>SOC Code: ${itemDetails["SOC 2020"]}</p>
+                    <p>Description: ${itemDetails["Natural Word Order + Sub Unit Group Description"]}</p>
+                `;
+            } else {
+                resultDiv.innerHTML = '<p>No results found.</p>';
+            }
         }
     </script>
 </body>
