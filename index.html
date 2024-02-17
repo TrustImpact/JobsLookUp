@@ -72,31 +72,33 @@
     </div>
 
     <h2>Job Lookup</h2>
-
-    <!-- Form for input -->
     <label for="jobInput">Enter Job Title or SOC Code:</label>
     <input type="text" id="jobInput" name="jobInput">
     <button onclick="lookupJob()">Lookup</button>
-
-    <!-- Placeholder for close matches -->
     <div id="suggestions"></div>
-
-    <!-- Placeholder for full details -->
     <div id="result"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <script>
-        let fetchedData = []; // Initialize an empty array to hold the fetched data
+        let fetchedData = [];
+
+        console.log('Starting fetch operation...');
 
         fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             fetchedData = data;
-            console.log("Data fetched successfully:", fetchedData); // Log fetched data for debugging
+            console.log('Data loaded successfully', data);
         })
         .catch(error => {
             console.error('Error loading the data:', error);
         });
+
 
         function lookupJob() {
             const input = document.getElementById('jobInput').value;
