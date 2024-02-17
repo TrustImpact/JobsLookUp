@@ -72,10 +72,11 @@
     </div>
 
     <h2>Job Lookup</h2>
-    <label for="jobInput">Enter Job Title or SOC Code:</label>
-    <input type="text" id="jobInput" name="jobInput">
-    <button onclick="lookupJob()">Lookup</button>
-    <div id="suggestions"></div>
+    <label for="jobDropdown">Select Job Title or SOC Code:</label>
+    <select id="jobDropdown" name="jobDropdown">
+        <!-- Options will be dynamically added here -->
+    </select>
+    <button onclick="displaySelectedJob()">Display</button>
     <div id="result"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
@@ -84,60 +85,50 @@
 
         console.log('Starting fetch operation...');
 
-fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/SOC2020_coding_index.json')
-.then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-})
-.then(data => {
-    console.log('Data loaded successfully', data);
-})
-.catch(error => {
-    console.error('Error loading the data:', error);
-});
-
-        function lookupJob() {
-            const input = document.getElementById('jobInput').value;
-            console.log("User input:", input); // Log user input for debugging
-
-            const suggestionsDiv = document.getElementById('suggestions');
-            suggestionsDiv.innerHTML = ''; // Clear previous suggestions/results
-            document.getElementById('result').innerHTML = ''; // Clear full details
-
-            // Fuse.js options for fuzzy search
-            const options = {
-                includeScore: true,
-                keys: ["Natural Word Order + Sub Unit Group Description"]
-            };
-
-            // Initialize Fuse with your data and options
-            const fuse = new Fuse(fetchedData, options);
-
-            // Perform the search
-            const results = fuse.search(input);
-            console.log("Fuse.js search results:", results); // Log search results for debugging
-
-            // Filter for close matches and limit the number of results if necessary
-            const filteredData = results.map(result => result.item);
-
-            if (filteredData.length === 0) {
-                suggestionsDiv.innerHTML = '<p>No close matches found.</p>';
-                return;
+        fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/SOC2020_coding_index.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data loaded successfully', data);
+            fetchedData = data; // Make sure the data is assigned here
+            populateDropdown(fetchedData); // Call the function to populate the dropdown
+        })
+        .catch(error => {
+            console.error('Error loading the data:', error);
+        });
 
-    // Display close matches for user to select
-    filteredData.forEach(item => {
-        const div = document.createElement('div');
-        div.textContent = item["Natural Word Order + Sub Unit Group Description"];
-        div.className = 'result-item';
-        div.onclick = () => displayFullDetails(item); // Function to display full details
-        suggestionsDiv.appendChild(div);
-    });
-}
+        // Function to populate the dropdown
+        function populateDropdown(data) {
+            const dropdown = document.getElementById('jobDropdown');
+            // Clear existing options first
+            dropdown.innerHTML = '';
+            // Add a default "Select" option
+            dropdown.add(new Option("Select a Job Title or SOC Code", ""));
+            // Populate dropdown with fetched data
+            data.forEach(item => {
+                let optionText = item["INDEXOCC NATURAL WORD ORDER"] + " - " + item["SOC 2020"]; // Customize this as needed
+                let option = new Option(optionText, item["UNIQUE ID"]); // Assuming UNIQUE ID can be used as a value
+                dropdown.add(option);
+            });
+        }
 
+        // Function to display selected job details
+        function displaySelectedJob() {
+            const dropdown = document.getElementById('jobDropdown');
+            const uniqueId = dropdown.value;
+            const selectedItem = fetchedData.find(item => item["UNIQUE ID"] === uniqueId);
+            if (selectedItem) {
+                displayFullDetails(selectedItem);
+            } else {
+                document.getElementById('result').innerHTML = '<p>Please select a job title or SOC code.</p>';
+            }
+        }
 
+        // Assuming displayFullDetails function remains the same
         function displayFullDetails(item) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
@@ -146,8 +137,8 @@ fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/SOC2020_cod
                 <p>Description: ${item["Natural Word Order + Sub Unit Group Description"]}</p>
                 <!-- Add more details as needed -->
             `;
-            // Clear the close matches as we display the full details
-            document.getElementById('suggestions').innerHTML = '';
+            // Optionally clear the dropdown selection
+            // document.getElementById('jobDropdown').selectedIndex = 0;
         }
     </script>
 </body>
