@@ -110,7 +110,7 @@
             dropdown.add(new Option("Select a Job Title or SOC Code", ""));
             // Populate dropdown with fetched data
             data.forEach(item => {
-                let optionText = item["INDEXOCC NATURAL WORD ORDER"] + " - " + item["SOC 2020"]; // Customize this as needed
+                let optionText = item["Natural Word Order + Sub Unit Group Description"] + " - " + item["SOC 2020"]; // Customize this as needed
                 let option = new Option(optionText, item["UNIQUE ID"]); // Assuming UNIQUE ID can be used as a value
                 dropdown.add(option);
             });
@@ -134,11 +134,13 @@
             resultDiv.innerHTML = `
                 <p>Job Title: ${item["INDEXOCC NATURAL WORD ORDER"]}</p>
                 <p>SOC Code: ${item["SOC 2020"]}</p>
-                <p>Description: ${item["Natural Word Order + Sub Unit Group Description"]}</p>
-                <!-- Add more details as needed -->
+                <p>SDS Green Job: ${item["SDS Green Job?"]}</p>
+                <p>SDS Green Job Category: ${item["SDS Green Job Category"]}</p>
+                <p>O*NET Green Job: ${item["O*NET Green Job"]}</p>
+                <p>O*NET Green Job Category: ${item["O*NET Green Job Category"]}</p>
             `;
             // Optionally clear the dropdown selection
-            // document.getElementById('jobDropdown').selectedIndex = 0;
+             document.getElementById('jobDropdown').selectedIndex = 0;
         }
     </script>
 </body>
