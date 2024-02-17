@@ -84,21 +84,19 @@
 
         console.log('Starting fetch operation...');
 
-        fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            fetchedData = data;
-            console.log('Data loaded successfully', data);
-        })
-        .catch(error => {
-            console.error('Error loading the data:', error);
-        });
-
+fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    console.log('Data loaded successfully', data);
+})
+.catch(error => {
+    console.error('Error loading the data:', error);
+});
 
         function lookupJob() {
             const input = document.getElementById('jobInput').value;
