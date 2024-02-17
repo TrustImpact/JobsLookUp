@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Lookup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet"> <!-- Ensure you have this for Raleway font -->
+    <style>
+        body {
+            font-family: 'Raleway', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+        }
+        .autocomplete-suggestion:hover {
+            background-color: #f0f0f0;
+        }
+        .vc_custom_1707894194125 {
+            margin-top: 80px !important;
+        }
+        #header {
+            width: 100%;
+            background-color: #FFFFFF;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        #header img {
+            height: 100px;
+        }
+        h1, h2, h3, h4, p {
+            color: #000000;
+        }
+        h4 {
+            font-weight: normal;
+        }
+        p {
+            font-size: 60%;
+        }
+        select, button {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        select {
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #5D3FD3;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #4c32cc;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <img src="https://www.trustimpact.com/wp-content/uploads/2020/09/trust-impact-logo.png" alt="Trust Impact Logo"> 
+    </div>
+
+    <h2>Job Lookup</h2>
+
+    <!-- Form for input -->
+    <label for="jobInput">Enter Job Title or SOC Code:</label>
+    <input type="text" id="jobInput" name="jobInput" oninput="showSuggestions(this.value)">
+    <div id="suggestions" class="autocomplete-suggestions"></div>
+    <button onclick="lookupJob()">Lookup</button>
+
+    <!-- Placeholder for results -->
+    <div class="result" id="result"></div>
+
+    <script>
+        fetch('url_to_your_json_file.json')
+    .then(response => response.json())
+    .then(data => {
+    // Use your data here
+    console.log(data);
+    })
+    .catch(error => console.error('Error loading the data:', error));
+
+        const soc2020Data = [
+            {
+                "UNIQUE ID": "e2uh",
+                "RECNO ": 27297.0,
+                "D": null, // NaN replaced with null
+                "SOC 90": 523,
+                "SOC 2020": 5242,
+                "INDEXOCC": "Technician, 1",
+                "INDEXOCC NATURAL WORD ORDER": "1 technician",
+                "Natural Word Order + Sub Unit Group Description": "1 technician / Telecoms and related network installers and repairers",
+                "Natural Word Order + Unit Description": "1 technician / Telecoms and related network installers and repairers",
+                "SOC 2020 Ext Code": "5242/00",
+                "SOC2020 4 digit": "5242",
+                "ADD": null,
+                "IND": "telecoms",
+                "SEE": null,
+                "ISCO-08 code based on SOC2020": 3522.0,
+                "VERSNO": null,
+                "SOC 2020 UNIT GROUP DESCRIPTIONS": "Telecoms and related network installers and repairers",
+                "SUB-UNIT GROUP DESCRIPTIONS": "Telecoms and related network installers and repairers",
+                "SDS Green Job?": "No",
+                "SDS Green Job Category": "Not a green job",
+                "O*NET Green Job": "No",
+                "O*NET Green Job Category": "Not a green job"
+            }
+            // Additional entries can be added here
+        ];
+
+        function showSuggestions(input) {
+            // Function code remains the same
+        }
+
+        function lookupJob() {
+            // Function code remains the same
+        }
+    </script>
+</body>
+</html>
