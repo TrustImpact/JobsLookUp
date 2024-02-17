@@ -15,12 +15,16 @@
             min-height: 100vh;
             background-color: #ffffff;
         }
-        .autocomplete-suggestion {
+        .autocomplete-suggestion, .result-item {
             padding: 10px;
             cursor: pointer;
             background-color: #fff;
+            margin-top: 5px;
+            width: 90%;
+            text-align: left;
+            border: 1px solid #ddd;
         }
-        .autocomplete-suggestion:hover {
+        .autocomplete-suggestion:hover, .result-item:hover {
             background-color: #f0f0f0;
         }
         #header {
@@ -71,71 +75,79 @@
 
     <!-- Form for input -->
     <label for="jobInput">Enter Job Title or SOC Code:</label>
-    <input type="text" id="jobInput" name="jobInput" oninput="showSuggestions(this.value)">
-    <div id="suggestions" class="autocomplete-suggestions"></div>
+    <input type="text" id="jobInput" name="jobInput">
     <button onclick="lookupJob()">Lookup</button>
 
-    <!-- Placeholder for results -->
-    <div class="result" id="result"></div>
+    <!-- Placeholder for close matches -->
+    <div id="suggestions"></div>
 
+    <!-- Placeholder for full details -->
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <script>
         let fetchedData = []; // Initialize an empty array to hold the fetched data
 
         fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/soc2020_coding_index.json')
         .then(response => response.json())
         .then(data => {
-            // Store the fetched data for use in other functions
             fetchedData = data;
-            console.log(fetchedData); // Optional: Log the data to ensure it's loaded
+            console.log("Data fetched successfully:", fetchedData); // Log fetched data for debugging
         })
-        .catch(error => console.error('Error loading the data:', error));
-
-        function showSuggestions(input) {
-            const suggestionsDiv = document.getElementById('suggestions');
-            suggestionsDiv.innerHTML = ''; // Clear previous suggestions
-
-            if (!input) return; // Don't show suggestions if input is empty
-
-            // Filter fetchedData for matching input (case-insensitive)
-            const filteredData = fetchedData.filter(item =>
-                item["Natural Word Order + Sub Unit Group Description"].toLowerCase().includes(input.toLowerCase())
-            );
-
-            // Limit the number of suggestions to display
-            const maxSuggestions = 5;
-            filteredData.slice(0, maxSuggestions).forEach(item => {
-                const div = document.createElement('div');
-                div.textContent = item["Natural Word Order + Sub Unit Group Description"];
-                div.className = 'autocomplete-suggestion';
-                div.onclick = function() {
-                    document.getElementById('jobInput').value = this.textContent;
-                    suggestionsDiv.innerHTML = ''; // Clear suggestions after selection
-                    lookupJob(); // Optionally, automatically perform the lookup when a suggestion is clicked
-                };
-                suggestionsDiv.appendChild(div);
-            });
-        }
+        .catch(error => {
+            console.error('Error loading the data:', error);
+        });
 
         function lookupJob() {
-            const input = document.getElementById('jobInput').value.toLowerCase();
-            const resultDiv = document.getElementById('result');
+            const input = document.getElementById('jobInput').value;
+            console.log("User input:", input); // Log user input for debugging
 
-            resultDiv.innerHTML = ''; // Clear previous results
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = ''; // Clear previous suggestions/results
+            document.getElementById('result').innerHTML = ''; // Clear full details
 
-            // Use fetchedData for lookup
-            const itemDetails = fetchedData.find(item =>
-                item["Natural Word Order + Sub Unit Group Description"].toLowerCase().includes(input)
-            );
+            // Fuse.js options for fuzzy search
+            const options = {
+                includeScore: true,
+                keys: ["Natural Word Order + Sub Unit Group Description"]
+            };
 
-            if (itemDetails) {
-                resultDiv.innerHTML = `
-                    <p>Job Title: ${itemDetails["INDEXOCC NATURAL WORD ORDER"]}</p>
-                    <p>SOC Code: ${itemDetails["SOC 2020"]}</p>
-                    <p>Description: ${itemDetails["Natural Word Order + Sub Unit Group Description"]}</p>
-                `;
-            } else {
-                resultDiv.innerHTML = '<p>No results found.</p>';
+            // Initialize Fuse with your data and options
+            const fuse = new Fuse(fetchedData, options);
+
+            // Perform the search
+            const results = fuse.search(input);
+            console.log("Fuse.js search results:", results); // Log search results for debugging
+
+            // Filter for close matches and limit the number of results if necessary
+            const filteredData = results.map(result => result.item);
+
+            if (filteredData.length === 0) {
+                suggestionsDiv.innerHTML = '<p>No close matches found.</p>';
+                return;
             }
+
+    // Display close matches for user to select
+    filteredData.forEach(item => {
+        const div = document.createElement('div');
+        div.textContent = item["Natural Word Order + Sub Unit Group Description"];
+        div.className = 'result-item';
+        div.onclick = () => displayFullDetails(item); // Function to display full details
+        suggestionsDiv.appendChild(div);
+    });
+}
+
+
+        function displayFullDetails(item) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <p>Job Title: ${item["INDEXOCC NATURAL WORD ORDER"]}</p>
+                <p>SOC Code: ${item["SOC 2020"]}</p>
+                <p>Description: ${item["Natural Word Order + Sub Unit Group Description"]}</p>
+                <!-- Add more details as needed -->
+            `;
+            // Clear the close matches as we display the full details
+            document.getElementById('suggestions').innerHTML = '';
         }
     </script>
 </body>
