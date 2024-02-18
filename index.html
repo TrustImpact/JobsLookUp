@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Lookup</title>
     <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
-    <style>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
         body {
             font-family: 'Raleway', sans-serif;
             display: flex;
@@ -71,77 +73,77 @@
         <img src="https://www.trustimpact.com/wp-content/uploads/2020/09/trust-impact-logo.png" alt="Trust Impact Logo"> 
     </div>
 
-    <h2>Job Lookup</h2>
-    <label for="jobDropdown">Select Job Title or SOC Code:</label>
-    <select id="jobDropdown" name="jobDropdown">
-        <!-- Options will be dynamically added here -->
-    </select>
-    <button onclick="displaySelectedJob()">Display</button>
-    <div id="result"></div>
+    <input type="text" id="job-search-input" placeholder="Search job titles...">
+    <button id="search-btn">Look Up</button>
+    <button id="reset-btn">Reset</button>
+    <div id="search-results"></div>
+    <div id="job-details"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <script>
-        let fetchedData = [];
+        $(document).ready(function() {
+            let fetchedData = [];
+            let fuse;
 
-        console.log('Starting fetch operation...');
+            fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/SOC2020_coding_index.json')
+            .then(response => response.json())
+            .then(data => {
+                fetchedData = data;
+                const options = {
+                    includeScore: true,
+                    keys: ['Natural Word Order + Sub Unit Group Description']
+                };
+                fuse = new Fuse(fetchedData, options);
+            })
+            .catch(error => console.error('Error loading the data:', error));
 
-        fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/main/SOC2020_coding_index.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Data loaded successfully', data);
-            fetchedData = data; // Make sure the data is assigned here
-            populateDropdown(fetchedData); // Call the function to populate the dropdown
-        })
-        .catch(error => {
-            console.error('Error loading the data:', error);
-        });
-
-        // Function to populate the dropdown
-        function populateDropdown(data) {
-            const dropdown = document.getElementById('jobDropdown');
-            // Clear existing options first
-            dropdown.innerHTML = '';
-            // Add a default "Select" option
-            dropdown.add(new Option("Select a Job Title", ""));
-            // Populate dropdown with fetched data
-            data.forEach(item => {
-                let optionText = item["Natural Word Order + Sub Unit Group Description"] + " - " + item["SOC 2020"]; // Customize this as needed
-                let option = new Option(optionText, item["UNIQUE ID"]); // Assuming UNIQUE ID can be used as a value
-                dropdown.add(option);
+            $('#search-btn').on('click', function() {
+                const searchValue = $('#job-search-input').val();
+                if(searchValue.length > 3) {
+                    const results = fuse.search(searchValue);
+                    displayResults(results);
+                } else {
+                    $('#search-results').empty();
+                }
             });
-        }
 
-        // Function to display selected job details
-        function displaySelectedJob() {
-            const dropdown = document.getElementById('jobDropdown');
-            const uniqueId = dropdown.value;
-            const selectedItem = fetchedData.find(item => item["UNIQUE ID"] === uniqueId);
-            if (selectedItem) {
-                displayFullDetails(selectedItem);
-            } else {
-                document.getElementById('result').innerHTML = '<p>Please select a job title or SOC code.</p>';
+            function displayResults(results) {
+                const searchResultsContainer = $('#search-results');
+                searchResultsContainer.empty();
+
+                results.forEach(result => {
+                    const item = $('<div>').addClass('result-item').text(result.item['Natural Word Order + Sub Unit Group Description']);
+                    item.on('click', function() {
+                        displayJobDetails(result.item);
+                    });
+                    searchResultsContainer.append(item);
+                });
             }
-        }
 
-        // Assuming displayFullDetails function remains the same
-        function displayFullDetails(item) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p>Job Title: ${item["INDEXOCC NATURAL WORD ORDER"]}</p>
-                <p>SOC Code: ${item["SOC 2020"]}</p>
-                <p>SDS Green Job: ${item["SDS Green Job?"]}</p>
-                <p>SDS Green Job Category: ${item["SDS Green Job Category"]}</p>
-                <p>O*NET Green Job: ${item["O*NET Green Job"]}</p>
-                <p>O*NET Green Job Category: ${item["O*NET Green Job Category"]}</p>
-            `;
-            // Optionally clear the dropdown selection
-             document.getElementById('jobDropdown').selectedIndex = 0;
-        }
-    </script>
+            function displayJobDetails(job) {
+                $('#search-results').empty().hide(); // Hide and clear the search results
+
+                $('#job-details').html(`
+                    <h4>Job Title: ${job["INDEXOCC NATURAL WORD ORDER"]}</h4>
+                    <h4>SOC Code: ${job["SOC 2020"]}</h4> 
+                    <h4>SDS Green Job: ${job["SDS Green Job?"]}</h4>
+                    <h4>SDS Green Job Category: ${job["SDS Green Job Category"]}</h4>
+                    <h4>O*NET Green Job: ${job["O*NET Green Job"]}</h4>
+                    <h4>O*NET Green Job Category: ${job["O*NET Green Job Category"]}</h4>
+                `).show(); // Ensure job details are visible
+            }
+            
+            // Function to reset UI to its initial state
+            function resetUI() {
+                $('#job-search-input').val(''); // Clear the search input
+                $('#search-results').empty().show(); // Clear and show search results
+                $('#job-details').empty().hide(); // Clear and hide job details
+            }
+
+            // Optionally, bind resetUI to a button or event
+            $('#reset-btn').on('click', function() {
+                resetUI();
+    });
+});
+</script>
 </body>
 </html>
