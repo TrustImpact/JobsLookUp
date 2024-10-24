@@ -84,28 +84,38 @@
             let fetchedData = [];
             let fuse;
 
+            // Fetching the JSON data from the provided URL
             fetch('https://raw.githubusercontent.com/TrustImpact/JobsLookUp/refs/heads/main/SOC2020_with_GreenSOC_and_NS_SEC.json')
             .then(response => response.json())
             .then(data => {
                 fetchedData = data;
                 const options = {
                     includeScore: true,
-                    keys: ['Natural Word Order + Sub Unit Group Description']
+                    keys: ['Natural Word Order + Sub Unit Group Description'] // Match field name exactly
                 };
                 fuse = new Fuse(fetchedData, options);
             })
-            .catch(error => console.error('Error loading the data:', error));
+            .catch(error => {
+                console.error('Error loading the data:', error);
+                $('#job-details').html('<p>Error loading the job data. Please try again later.</p>'); // User-friendly error message
+            });
 
+            // Search functionality triggered by search button
             $('#search-btn').on('click', function() {
-                const searchValue = $('#job-search-input').val();
-                if(searchValue.length > 3) {
+                const searchValue = $('#job-search-input').val().trim();
+                if (searchValue.length > 3) { // Search after 3 characters
                     const results = fuse.search(searchValue);
-                    displayResults(results);
+                    if (results.length > 0) {
+                        displayResults(results);
+                    } else {
+                        $('#search-results').html('<p>No matching jobs found.</p>'); // If no results found
+                    }
                 } else {
                     $('#search-results').empty();
                 }
             });
 
+            // Function to display search results
             function displayResults(results) {
                 const searchResultsContainer = $('#search-results');
                 searchResultsContainer.empty();
@@ -119,6 +129,7 @@
                 });
             }
 
+            // Function to display job details when a result is clicked
             function displayJobDetails(job) {
                 $('#search-results').empty().hide(); // Hide and clear the search results
 
@@ -126,23 +137,23 @@
                     <h4>Job Title: ${job["INDEXOCC NATURAL WORD ORDER"]}</h4>
                     <h4>SOC Code: ${job["SOC 2020"]}</h4> 
                     <h4>SDS Green Job: ${job["Green or not?"]}</h4>
-                    <h4>SDS Green Job Category: ${job["Green Category"]}</h4>
-                    <h4>Simplified National Statistics Socio-economic classification (NS-SEC): ${job["SSEC"]}</h4>
+                    <h4>SDS Green Job Category: ${job["Green category"]}</h4>
+                    <h4>Simplified National Statistics Socio-economic classification (NS-SEC): ${job["ssec"]}</h4>
                 `).show(); // Ensure job details are visible
             }
             
-            // Function to reset UI to its initial state
+            // Reset the UI to its initial state
             function resetUI() {
                 $('#job-search-input').val(''); // Clear the search input
                 $('#search-results').empty().show(); // Clear and show search results
                 $('#job-details').empty().hide(); // Clear and hide job details
             }
 
-            // Optionally, bind resetUI to a button or event
+            // Bind resetUI to the reset button
             $('#reset-btn').on('click', function() {
                 resetUI();
-    });
-});
-</script>
+            });
+        });
+    </script>
 </body>
 </html>
